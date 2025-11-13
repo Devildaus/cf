@@ -13,20 +13,27 @@
                         <th>Role</th>
                         <th>Action</th>
                     </tr>
+
+                    @foreach ($user as $item)
+                        
                     <tr>
-                        <td>1</td>
-                        <td>budi</td>
-                        <td>budi@gmail</td>
-                        <td>Admin</td>
+                        <td> {{ $loop->iteration }} </td>
+                        <td> {{ $item->name }} </td>
+                        <td> {{ $item->email }} </td>
+                        <td> {{ $item->role }} </td>
                         <td>
                             <div class="d-flex">
-                                <a href="" class="btn btn-info mr-2"><i class="fas fa-edit"></i> Edit</a>
-                                <div class="form">
-                                    <button class="btn btn-danger"><i class="fas fa-trash"></i> Hapus</button>
-                                </div>
+                                <a href="/admin/user/{{ $item->id }}/edit" class="btn btn-info mr-2"><i class="fas fa-edit"></i> Edit</a>
+                                <form action="/admin/user/{{ $item->id }}" method="POST">
+                                    @method('DELETE')
+                                    @csrf
+                                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Hapus</button>
+                                </form>                                
                             </div>
                         </td>
                     </tr>
+
+                    @endforeach
                 </table>
             </div>
         </div>

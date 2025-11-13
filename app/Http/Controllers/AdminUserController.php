@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class AdminUserController extends Controller
 {
@@ -15,7 +16,8 @@ class AdminUserController extends Controller
     {
         //
         $data= [
-            'title' => 'Data User',
+            'title' => 'Manajemen User',
+            'user' => User::get(),
             'content' => 'admin.user.index'
         ];
         return view('admin.layouts.wrapper', $data);
@@ -42,7 +44,7 @@ class AdminUserController extends Controller
         //
         $data = $request->validate([
             'name' => 'required',
-            'email' => 'required',
+            'email' => 'required|unique:users',
             'role' => 'required',
             'password' => 'required',
             're_pass' => 'required|same:password',
@@ -67,6 +69,13 @@ class AdminUserController extends Controller
     public function edit(string $id)
     {
         //
+        $data= [
+            'title' => 'Tambah User',
+            'user' => User::find($id),
+            'content' => 'admin.user.create'
+        ];
+        Alert::success('Success', 'Data berhasil ditambahkan');
+        return view('admin.layouts.wrapper', $data);
     }
 
     /**
@@ -75,6 +84,21 @@ class AdminUserController extends Controller
     public function update(Request $request, string $id)
     {
         //
+        $user = User::find($id);
+        $data = $request->validate([
+            'name' => 'required',
+            'email' => 'required',
+            'role' => 'required',
+        ]);
+
+        if($request->password == ''){
+            $data['password'] = $user->password;
+        } else {
+        $data['password'] = Hash::make($request['password']);
+        }
+        $user->update($data);
+        Alert::success('Success', 'Data berhasil diubah');
+        return redirect('/admin/user');
     }
 
     /**
@@ -83,5 +107,10 @@ class AdminUserController extends Controller
     public function destroy(string $id)
     {
         //
+        // die('masuk');
+        $user = User::find($id);
+        $user->delete();
+        Alert::success('Success', 'Data berhasil dihapus');
+        return redirect('/admin/user');
     }
 }
