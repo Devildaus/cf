@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Gejala;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use RealRashid\SweetAlert\Facades\Alert;
 
-class AdminUserController extends Controller
+class AdminGejalaController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,9 +15,9 @@ class AdminUserController extends Controller
     {
         //
         $data= [
-            'title' => 'Manajemen User',
-            'user' => User::get(),
-            'content' => 'admin.user.index'
+            'title' => 'Manajemen Gejala',
+            'gejala' => Gejala::get(),
+            'content' => 'admin.gejala.index'
         ];
         return view('admin.layouts.wrapper', $data);
     }
@@ -30,8 +29,8 @@ class AdminUserController extends Controller
     {
         //
         $data= [
-            'title' => 'Tambah User',
-            'content' => 'admin.user.create'
+            'title' => 'Tambah Gejala',
+            'content' => 'admin.gejala.create'
         ];
         return view('admin.layouts.wrapper', $data);
     }
@@ -43,17 +42,15 @@ class AdminUserController extends Controller
     {
         //
         $data = $request->validate([
+            'kode_gejala' => 'required|unique:gejalas',
             'name' => 'required',
-            'email' => 'required|unique:users',
-            'role' => 'required',
-            'password' => 'required',
-            're_pass' => 'required|same:password',
+            'nilai_cf' => 'required',
+
         ]);
-        
-        $data['password'] = Hash::make($data['password']);
-        User::create($data);
+
+        Gejala::create($data);
         Alert::success('Success', 'Data berhasil ditambahkan');
-        return redirect('/admin/user');
+        return redirect('/admin/gejala');
     }
 
     /**
@@ -71,9 +68,9 @@ class AdminUserController extends Controller
     {
         //
         $data= [
-            'title' => 'Tambah User',
-            'user' => User::find($id),
-            'content' => 'admin.user.create'
+            'title' => 'Edit Gejala',
+            'gejala' => Gejala::find($id),
+            'content' => 'admin.gejala.create'
         ];
         return view('admin.layouts.wrapper', $data);
     }
@@ -84,21 +81,16 @@ class AdminUserController extends Controller
     public function update(Request $request, string $id)
     {
         //
-        $user = User::find($id);
+        $gejala = Gejala::find($id);
         $data = $request->validate([
+            'kode_gejala' => 'required|unique:gejalas',
             'name' => 'required',
-            'email' => 'required',
-            'role' => 'required',
+            'nilai_cf' => 'required',
         ]);
 
-        if($request->password == ''){
-            $data['password'] = $user->password;
-        } else {
-        $data['password'] = Hash::make($request['password']);
-        }
-        $user->update($data);
+        $gejala->update($data);
         Alert::success('Success', 'Data berhasil diubah');
-        return redirect('/admin/user');
+        return redirect('/admin/gejala');
     }
 
     /**
@@ -108,9 +100,9 @@ class AdminUserController extends Controller
     {
         //
         // die('masuk');
-        $user = User::find($id);
-        $user->delete();
+        $gejala = Gejala::find($id);
+        $gejala->delete();
         Alert::success('Success', 'Data berhasil dihapus');
-        return redirect('/admin/user');
+        return redirect('/admin/gejala');
     }
 }

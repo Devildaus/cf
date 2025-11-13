@@ -43,7 +43,7 @@
             </ul>
           </li> --}}
           <li class="nav-item">
-            <a href="/admin/diagnosa" class="nav-link">
+            <a href="/admin/diagnosa" class="nav-link {{ Request::is('admin/diagnosa*') ? 'active' : '' }}">
               <i class="nav-icon fas fa-spinner"></i>
               <p>
                 Diagnosa
@@ -53,7 +53,7 @@
           </li>
 
           <li class="nav-item">
-            <a href="/admin/pasien" class="nav-link">
+            <a href="/admin/pasien" class="nav-link {{ Request::is('admin/pasien*') ? 'active' : '' }}">
               <i class="nav-icon fas fa-users"></i>
               <p>
                 Pasien
@@ -63,7 +63,7 @@
           </li>          
 
           <li class="nav-item">
-            <a href="/admin/penyakit" class="nav-link">
+            <a href="/admin/penyakit" class="nav-link {{ Request::is('admin/penyakit*') ? 'active' : '' }}">
               <i class="nav-icon fas fa-calendar"></i>
               <p>
                 Penyakit
@@ -73,7 +73,7 @@
           </li>
 
           <li class="nav-item">
-            <a href="/admin/gejala" class="nav-link">
+            <a href="/admin/gejala" class="nav-link {{ Request::is('admin/gejala*') ? 'active' : '' }}">
               <i class="nav-icon fas fa-list"></i>
               <p>
                 Gejala
@@ -83,7 +83,7 @@
           </li>
           
           <li class="nav-item">
-            <a href="/admin/user" class="nav-link">
+            <a href="/admin/user" class="nav-link {{ Request::is('admin/user*') ? 'active' : '' }}">
               <i class="nav-icon fas fa-user"></i>
               <p>
                 User
