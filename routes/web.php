@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminGejalaController;
+use App\Http\Controllers\AdminPenyakitController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,5 +32,12 @@ Route::prefix('/admin')->group(function (){
 
     Route::resource('/user', AdminUserController::class);
     Route::resource('/gejala', AdminGejalaController::class);
+
+
+
+    
+    Route::delete('/penyakit/delete-role/{id}', [AdminPenyakitController::class, 'deleteRole']);
+    Route::post('/penyakit/add-gejala', [AdminPenyakitController::class, 'addGejala']);
+    Route::resource('/penyakit', AdminPenyakitController::class);
     
 });
