@@ -34,7 +34,10 @@ Route::prefix('/admin')->group(function (){
 
 
     Route::get('/diagnosa', [AdminDiagnosaController::class, 'index']);
+    Route::post('/diagnosa/create-pasien', [AdminDiagnosaController::class, 'createPasien']);
+    Route::get('/diagnosa/pilih', [AdminDiagnosaController::class, 'pilih']);
     Route::get('/diagnosa/pilih-gejala', [AdminDiagnosaController::class, 'pilihGejala']);
+    Route::get('/diagnosa/hapus-gejala', [AdminDiagnosaController::class, 'hapusGejalaTerpilih']);
     Route::get('/diagnosa/keputusan', [AdminDiagnosaController::class, 'keputusan']);
 
 

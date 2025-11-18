@@ -8,11 +8,11 @@
                         <table class="table">
                             <tr>
                                 <td>Nama</td>
-                                <td>: Samsul</td>
+                                <td>: {{ $pasien->name }}</td>
                             </tr>
                             <tr>
                                 <td>Umur</td>
-                                <td>: 23 Tahun</td>
+                                <td>: {{ $pasien->umur. ' Tahun' }} </td>
                             </tr>                    
                         </table>
                     </div>
@@ -28,10 +28,16 @@
                                 <th>#</th>
                             </tr>
 
+                            @foreach ($gejala as $item)
+
+                            @php
+                                $cek = App\Models\Diagnosa::whereGejalaId($item->id)->wherePasienId(session()->get('pasien_id'))->first();
+                            @endphp
+                            @if($cek==false)                                                            
                             <tr>
-                                <td>1</td>
-                                <td>G001</td>
-                                <td>Sakit Kepala</td>
+                                <td> {{ $loop->iteration }} </td>
+                                <td> {{ $item->kode_gejala }} </td>
+                                <td> {{ $item->name }} </td>
                                 <td>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-info">Pilih</button>
@@ -39,13 +45,19 @@
                                             <span class="sr-only">Toggle Dropdown</span>
                                         </button>
                                         <div class="dropdown-menu" role="menu" style="">
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <a class="dropdown-item" href="#">Something else here</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0">Normal</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0,2">Jarang/Mungkin</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0,4">Terkadang/Kemungkinan Besar</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0,8">Lumayan Sering/Hampir Pasti</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=1">Sering/Pasti</a>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
+
+                            @endif
+
+                            @endforeach
                   
                         </table>
                     </div>
@@ -59,16 +71,19 @@
                                 <th>#</th>
                             </tr>
 
+                            @foreach ($gejalaTerpilih as $item)
+                                
                             <tr>
-                                <td>1</td>
-                                <td>G001</td>
-                                <td>Sakit Kepala</td>
+                                <td> {{ $loop->iteration }} </td>
+                                <td> {{ $item->gejala->kode_gejala }} </td>
+                                <td> {{ $item->gejala->name }} </td>
                                 <td>
-                                    <a href="" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></a>
+                                    <a href="/admin/diagnosa/hapus-gejala?gejala_id={{ $item->gejala_id }}" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></a>
                                 </td>
                             </tr>                  
+                            @endforeach
                         </table>
-
+                        
                         <a href="/admin/diagnosa/keputusan" class="btn btn-primary btn-block"><i class="fas fa-circle"></i> Diagnosa</a>
                     </div>
                 </div>
