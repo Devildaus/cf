@@ -38,6 +38,7 @@ Route::prefix('/admin')->group(function (){
     Route::get('/diagnosa/pilih', [AdminDiagnosaController::class, 'pilih']);
     Route::get('/diagnosa/pilih-gejala', [AdminDiagnosaController::class, 'pilihGejala']);
     Route::get('/diagnosa/hapus-gejala', [AdminDiagnosaController::class, 'hapusGejalaTerpilih']);
+    Route::get('/diagnosa/proses', [AdminDiagnosaController::class, 'prosesDiagnosa']);
     Route::get('/diagnosa/keputusan', [AdminDiagnosaController::class, 'keputusan']);
 
 

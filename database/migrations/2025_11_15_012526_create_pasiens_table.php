@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->integer('umur')->nullable();
             $table->float('akumulasi_cf')->nullable();
-            $table->float('persentasi')->nullable();
+            $table->float('persentase')->nullable();
             $table->foreignId('penyakit_id')->nullable();
             $table->string('nama_penyakit')->nullable();
             $table->timestamps();

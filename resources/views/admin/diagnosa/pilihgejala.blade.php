@@ -46,10 +46,11 @@
                                         </button>
                                         <div class="dropdown-menu" role="menu" style="">
                                             <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0">Normal</a>
-                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0,2">Jarang/Mungkin</a>
-                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0,4">Terkadang/Kemungkinan Besar</a>
-                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0,8">Lumayan Sering/Hampir Pasti</a>
-                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=1">Sering/Pasti</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0.2">Sedikit yakin/ Jarang / Mungkin</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0.4">Cukup yakin / Terkadang / Kemungkinan</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0.6">Yakin / Sering / Kemungkinan besar</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=0.8">Sangat yakin / Hampir pasti</a>
+                                            <a class="dropdown-item" href="/admin/diagnosa/pilih?gejala_id={{ $item->id }}&nilai=1">Yakin sepenuhnya / Pasti</a>
                                         </div>
                                     </div>
                                 </td>
@@ -84,7 +85,7 @@
                             @endforeach
                         </table>
                         
-                        <a href="/admin/diagnosa/keputusan" class="btn btn-primary btn-block"><i class="fas fa-circle"></i> Diagnosa</a>
+                        <a href="/admin/diagnosa/proses" class="btn btn-primary btn-block"><i class="fas fa-circle"></i> Diagnosa</a>
                     </div>
                 </div>
 

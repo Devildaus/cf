@@ -11,29 +11,34 @@
                         <table class="table">
                             <tr>
                                 <td width="200px">Nama Pasien</td>
-                                <td>: Samsul</td>
+                                <td>: {{ $pasien->name }} </td>
                             </tr>
                             <tr>
                                 <td>Umur</td>
-                                <td>: 23 Tahun</td>
+                                <td>: {{ $pasien->umur }} Tahun</td>
+                            </tr>
+
+                            <tr>
+                                <td>Nama Penyakit</td>
+                                <td>: {{ isset($pasien->penyakit) ? $pasien->penyakit->name : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
                             </tr>
 
                             <tr>
                                 <td>Keakuratan</td>
-                                <td>: 0.98</td>
+                                <td>: {{ $pasien->akumulasi_cf }}</td>
                             </tr>
                             <tr>
-                                <td>Presentasi</td>
-                                <td>: 98%</td>
+                                <td>Presentase</td>
+                                <td>: {{ $pasien->persentase }}%</td>
                             </tr>
 
                             <tr>
                                 <td>Deskripsi</td>
-                                <td>: Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur cupiditate dolor culpa!</td>
+                                <td>: {{ isset($pasien->penyakit) ? $pasien->penyakit->desc : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
                             </tr>
                             <tr>
                                 <td>Penanganan</td>
-                                <td>:  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nemo asperiores pariatur nisi!</td>
+                                <td>:  {{ isset($pasien->penyakit) ? $pasien->penyakit->penanganan : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
                             </tr>
 
                         </table>
@@ -47,11 +52,20 @@
                                 <th>Nilai</th>
                             </tr>
 
+                            @foreach ($gejala as $item)
+                            @if ($item->cf_hasil != 0)
+                                
+                            
+                            
                             <tr>
-                                <td>1</td>
-                                <td>Sakit Kepala</td>
-                                <td>0.8</td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $item->gejala->name }}</td>
+                                <td>{{ $item->cf_hasil }}</td>
                             </tr>
+                            
+                            @endif
+                            @endforeach
+
                         </table>
                     </div>
                 </div>
