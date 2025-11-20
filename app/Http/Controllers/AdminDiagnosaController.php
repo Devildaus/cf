@@ -118,7 +118,7 @@ class AdminDiagnosaController extends Controller
         $pasien->persentase = round($hasil * 100);
         $pasien->penyakit_id = $penyakit_id;
         $pasien->save();
-        return redirect('/admin/diagnosa/keputusan');
+        return redirect('/admin/diagnosa/keputusan'.'/'.$pasien_id);
     }
 
     function hitung_cf($data){
@@ -133,10 +133,12 @@ class AdminDiagnosaController extends Controller
         return $cf_old;
     }
 
-    public function keputusan()
+    public function keputusan($pasien_id)
     {
         //
-        $pasien_id = session() ->get('pasien_id');
+        if ($pasien_id == null){
+            $pasien_id = session() ->get('pasien_id');
+        } 
         $data= [
             'title' => 'Hasil Diagnosa',
             'pasien' => Pasien::with('penyakit')->Find($pasien_id),

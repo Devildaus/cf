@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminGejalaController;
 use App\Http\Controllers\AdminPenyakitController;
 use App\Http\Controllers\AdminPasienController;
 use App\Http\Controllers\AdminDiagnosaController;
+use App\Http\Controllers\AdminAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,9 +23,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login', function (){
-    return view('admin.auth.login');
-});
+Route::get('/login', [AdminAuthController::class, 'index']);
+Route::post('/login', [AdminAuthController::class, 'login']);
 
 Route::prefix('/admin')->group(function (){
     Route::get('dashboard',function () {
@@ -39,7 +39,9 @@ Route::prefix('/admin')->group(function (){
     Route::get('/diagnosa/pilih-gejala', [AdminDiagnosaController::class, 'pilihGejala']);
     Route::get('/diagnosa/hapus-gejala', [AdminDiagnosaController::class, 'hapusGejalaTerpilih']);
     Route::get('/diagnosa/proses', [AdminDiagnosaController::class, 'prosesDiagnosa']);
-    Route::get('/diagnosa/keputusan', [AdminDiagnosaController::class, 'keputusan']);
+    Route::get('/diagnosa/keputusan/{id}', [AdminDiagnosaController::class, 'keputusan']);
+
+    Route::get('/pasien/cetak/{id}', [AdminPasienController::class, 'print']);
 
 
     Route::resource('/pasien', AdminPasienController::class);
