@@ -23,13 +23,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login', [AdminAuthController::class, 'index']);
-Route::post('/login', [AdminAuthController::class, 'login']);
+Route::get('/login', [AdminAuthController::class, 'index'])->name('login')->middleware('guest');
+Route::post('/login', [AdminAuthController::class, 'login'])->middleware('guest');
+Route::get('/logout', [AdminAuthController::class, 'logout'])->middleware('auth');
 
-Route::prefix('/admin')->group(function (){
+Route::prefix('/admin')->middleware('auth')->group(function (){
     Route::get('dashboard',function () {
-        return view('admin.layouts.wrapper');
+        // return view('admin.layouts.wrapper');        
         //return view('index');    
+
+        return view('admin.layouts.wrapper', [        
+        'content' => 'admin.dashboard'
+        ]);
     });
 
 

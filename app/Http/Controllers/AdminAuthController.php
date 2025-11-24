@@ -22,11 +22,23 @@ class AdminAuthController extends Controller
 
         if(Auth::attempt($data)) {
             $request->session()->regenerate();
-            redirect('/admin/diagnosa');
+            return redirect('/admin/diagnosa');
         }
 
         return back()->with('loginError' , 'Gagal Login! Silahkan periksa kembali email dan password anda.');
 
-    }  
+    }
+    
+    function logout() {
+        Auth::logout();
+
+        request()->session()->invalidate();
+
+        request()->session()->regenerateToken();
+
+        Alert::success('Berhasil Logout', 'Anda telah berhasil logout dari sistem.');
+
+        return redirect('/login');
+    }
        
 }

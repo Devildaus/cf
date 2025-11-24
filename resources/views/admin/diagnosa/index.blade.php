@@ -15,7 +15,7 @@
                     
                     <div class="form-group">
                         <label for="">Umur Pasien</label>
-                        <input type="number" min="1" max="70" class="form-control" required name="umur" placeholder="Nama Pasien">
+                        <input type="number" min="1" max="70" class="form-control" required name="umur" placeholder="Umur Pasien">
                     </div>
                     
                     <button type="submit" class="btn btn-primary"> Diagnosa <i class="fas fa-arrow-right"></i></button>
