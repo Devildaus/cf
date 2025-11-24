@@ -121,17 +121,31 @@ class AdminDiagnosaController extends Controller
         return redirect('/admin/diagnosa/keputusan'.'/'.$pasien_id);
     }
 
+    // versi 1
+    // function hitung_cf($data){
+    //     $cf_old = 0;
+    //     foreach($data as $key => $value){
+    //         if ($key == 0){
+    //             $cf_old = 0;
+    //         } else {
+    //             $cf_old = $cf_old + $value->cf_hasil * (1 - $cf_old);                
+    //         }
+    //     }
+    //     return $cf_old;
+    // }
+
+    // veri 2
     function hitung_cf($data){
-        $cf_old = 0;
-        foreach($data as $key => $value){
-            if ($key == 0){
-                $cf_old = 0;
-            } else {
-                $cf_old = $cf_old + $value->cf_hasil * (1 - $cf_old);                
-            }
+    $cf_old = null;
+    foreach($data as $key => $value){
+        if ($cf_old === null){
+            $cf_old = $value->cf_hasil; 
+        } else {
+            $cf_old = $cf_old + $value->cf_hasil * (1 - $cf_old); 
         }
-        return $cf_old;
     }
+    return $cf_old;
+}
 
     public function keputusan($pasien_id)
     {
