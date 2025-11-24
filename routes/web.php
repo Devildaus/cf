@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminPenyakitController;
 use App\Http\Controllers\AdminPasienController;
 use App\Http\Controllers\AdminDiagnosaController;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,5 +66,7 @@ Route::prefix('/admin')->middleware('auth')->group(function (){
     Route::post('/penyakit/add-gejala', [AdminPenyakitController::class, 'addGejala']);
     Route::resource('/penyakit', AdminPenyakitController::class);
 
+
+    Route::get('/dashboard', [DashboardController::class, 'index']);
     
 });
