@@ -23,6 +23,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/home', function () {
+    return redirect('/admin/dashboard');
+})->middleware('auth');
+
+
 Route::get('/login', [AdminAuthController::class, 'index'])->name('login')->middleware('guest');
 Route::post('/login', [AdminAuthController::class, 'login'])->middleware('guest');
 Route::get('/logout', [AdminAuthController::class, 'logout'])->middleware('auth');
