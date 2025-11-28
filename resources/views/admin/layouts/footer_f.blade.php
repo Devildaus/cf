@@ -17,37 +17,6 @@
   </div>
 </footer>
 
-<!-- Control Sidebar -->
-<aside class="control-sidebar control-sidebar-dark" style="background: #1a3c6e;">
-  <!-- Control sidebar content goes here -->
-  <div class="p-3">
-    <h5>Quick Stats</h5>
-    <div class="mb-3">
-      <small>Today's Appointments</small>
-      <div class="progress" style="height: 8px;">
-        <div class="progress-bar bg-info" style="width: 65%"></div>
-      </div>
-      <small>12 of 18 completed</small>
-    </div>
-    <div class="mb-3">
-      <small>Patient Satisfaction</small>
-      <div class="progress" style="height: 8px;">
-        <div class="progress-bar bg-success" style="width: 85%"></div>
-      </div>
-      <small>94% positive feedback</small>
-    </div>
-    <div class="mb-3">
-      <small>System Performance</small>
-      <div class="progress" style="height: 8px;">
-        <div class="progress-bar bg-warning" style="width: 92%"></div>
-      </div>
-      <small>Optimal performance</small>
-    </div>
-  </div>
-</aside>
-<!-- /.control-sidebar -->
-</div>
-<!-- ./wrapper -->
 
 <!-- jQuery -->
 <script src="/plugins/jquery/jquery.min.js"></script>

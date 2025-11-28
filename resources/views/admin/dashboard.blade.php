@@ -191,19 +191,6 @@
                     @endif
 
 
-                    <!-- Support Card -->
-                    <div class="card card-info">
-                        <div class="card-header">
-                            <h3 class="card-title">Butuh Bantuan?</h3>
-                        </div>
-                        <div class="card-body text-center">
-                            <i class="fas fa-headset fa-2x text-info mb-3"></i>
-                            <p class="mb-3">Tim support siap membantu Anda.</p>
-                            <button class="btn btn-info btn-sm">
-                                <i class="fas fa-envelope mr-1"></i> Hubungi
-                            </button>
-                        </div>
-                    </div>
                 </div><!-- /.Right col -->
             </div><!-- /.row -->
         </div><!--/. container-fluid -->

@@ -56,6 +56,18 @@
                             <option value="6" {{ $selected_value == 6 || is_null($selected_value) ? 'selected' : '' }}>6 Pilihan (Opsi Lengkap)</option>
 
                         </select>
+                    <div class="form-group">
+                        <label for="penjelasan_pilihan">Penjelasan Nilai (Opsional)</label>
+                        {{-- Menggunakan textarea untuk penjelasan yang lebih panjang --}}
+                        <textarea class="form-control @error('penjelasan_pilihan') is-invalid @enderror" 
+                                name="penjelasan_pilihan" 
+                                id="penjelasan_pilihan" 
+                                placeholder="Contoh: 'penjelasan nilai normal pada gejala pasien dan kepastiannya...'">{{ isset($gejala) ? $gejala->penjelasan_pilihan : old('penjelasan_pilihan') }}</textarea>
+                        
+                        @error('penjelasan_pilihan')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                         
                         @error('jumlah_pilihan')
                             <div class="invalid-feedback">{{ $message }}</div>

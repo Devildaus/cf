@@ -25,6 +25,7 @@
                                 <th>No</th>
                                 <th>Kode</th>
                                 <th>Gejala</th>
+                                <th>Penjelasan</th>
                                 <th>#</th>
                             </tr>
 
@@ -38,6 +39,7 @@
                                 <td> {{ $loop->iteration }} </td>
                                 <td> {{ $item->kode_gejala }} </td>
                                 <td> {{ $item->name }} </td>
+                                <td> {{ $item->penjelasan_pilihan }} </td>
                                 <td>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-info">Pilih</button>
