@@ -22,7 +22,7 @@ class AdminAuthController extends Controller
 
         if(Auth::attempt($data)) {
             $request->session()->regenerate();
-            return redirect('/admin/diagnosa');
+            return redirect('/admin/dashboard');
         }
 
         return back()->with('loginError' , 'Gagal Login! Silahkan periksa kembali email dan password anda.');

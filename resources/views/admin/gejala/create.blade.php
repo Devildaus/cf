@@ -35,6 +35,32 @@
                             <div class="invalid-feedback">{{ $message }}</div>                            
                         @enderror
                     </div>
+                    <div class="form-group">
+                        <label for="jumlah_pilihan">Jumlah Pilihan</label>
+                        
+                        {{-- Ganti input type="text" dengan elemen <select> --}}
+                        <select class="form-control @error('jumlah_pilihan') is-invalid @enderror" name="jumlah_pilihan" id="jumlah_pilihan">
+                            
+                            {{-- Tentukan nilai default untuk ditampilkan, ambil dari $gejala atau old() --}}
+                            @php
+                                $selected_value = isset($gejala) ? $gejala->jumlah_pilihan : old('jumlah_pilihan');
+                            @endphp
+
+                            {{-- Opsi 2 (Ya / Tidak) --}}
+                            <option value="2" {{ $selected_value == 2 ? 'selected' : '' }}>2 Pilihan (Ya / Tidak)</option>
+                            
+                            {{-- Opsi 3 (Ya / Sebagian / Tidak) --}}
+                            <option value="3" {{ $selected_value == 3 ? 'selected' : '' }}>3 Pilihan (Ya / Sebagian / Tidak)</option>
+                            
+                            {{-- Opsi 6 (Lengkap: Normal s/d Yakin Sepenuhnya) --}}
+                            <option value="6" {{ $selected_value == 6 || is_null($selected_value) ? 'selected' : '' }}>6 Pilihan (Opsi Lengkap)</option>
+
+                        </select>
+                        
+                        @error('jumlah_pilihan')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
 
                     <a href="/admin/gejala" class="btn btn-info"><i class="fas fa-arrow-left"></i> Kembali</a>
