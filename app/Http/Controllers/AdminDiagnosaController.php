@@ -62,7 +62,8 @@ class AdminDiagnosaController extends Controller
                 'cf_hasil' => $cf_user * (float) $r->bobot_cf
             ];
             Diagnosa::create($data);            
-        }        
+        }     
+        // dd(request()->all());
         return redirect('/admin/diagnosa/pilih-gejala');
     
     }

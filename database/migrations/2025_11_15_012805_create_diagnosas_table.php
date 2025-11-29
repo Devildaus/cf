@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('pasien_id')->nullable();
             $table->foreignId('gejala_id')->nullable();
             $table->foreignId('penyakit_id')->nullable();
-            $table->float('nilai_cf')->nullable();
-            $table->float('cf_hasil')->nullable();
+            $table->decimal('nilai_cf', 3, 2)->nullable(); // <-- Diperbaiki
+            $table->decimal('cf_hasil', 3, 2)->nullable(); // <-- Diperbaiki
             $table->timestamps();
         });
     }
