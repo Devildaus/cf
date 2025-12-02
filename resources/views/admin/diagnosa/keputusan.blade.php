@@ -35,14 +35,34 @@
                                 <td>: {{ $pasien->persentase }}%</td>
                             </tr>
 
-                            <tr>
-                                <td>Deskripsi</td>
-                                <td>: {{ isset($pasien->penyakit) ? $pasien->penyakit->desc : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
-                            </tr>
-                            <tr>
-                                <td>Penanganan</td>
-                                <td>:  {{ isset($pasien->penyakit) ? $pasien->penyakit->penanganan : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
-                            </tr>
+                            <div class="card">
+                                <div class="card-header">Hasil Analisa</div>
+                                <div class="card-body">
+                                    <h5>Deskripsi Penyakit</h5>
+                                    <p>
+                                        {{-- Prioritaskan hasil AI, jika kosong pakai deskripsi database --}}
+                                        {!! nl2br($pasien->deskripsi_ai ?? $pasien->penyakit->desc) !!}
+                                    </p>
+                                    @if($pasien->deskripsi_ai)
+                                        <small class="text-success"><i class="fas fa-robot"></i> Dianalisa oleh AI</small>
+                                    @else
+                                        <small class="text-muted"><i class="fas fa-database"></i> Data Standar Medis</small>
+                                    @endif
+
+                                    <hr>
+
+                                    <h5>Saran Penanganan</h5>
+                                    <p>
+                                        {!! nl2br($pasien->penanganan_ai ?? $pasien->penyakit->penanganan) !!}
+                                    </p>
+                                    
+                                    @if($pasien->penanganan_ai)
+                                        <small class="text-success"><i class="fas fa-robot"></i> Saran oleh AI</small>
+                                    @else
+                                        <small class="text-muted"><i class="fas fa-database"></i> Data Standar Medis</small>
+                                    @endif
+                                </div>
+                            </div>
 
                         </table>
                     </div>

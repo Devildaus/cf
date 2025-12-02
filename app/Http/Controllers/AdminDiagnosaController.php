@@ -8,6 +8,7 @@ use App\Models\Gejala;
 use App\Models\Role;
 use App\Models\Diagnosa;
 use App\Models\Penyakit;
+use Illuminate\Support\Facades\Http;
 
 class AdminDiagnosaController extends Controller
 {
@@ -148,18 +149,88 @@ class AdminDiagnosaController extends Controller
     return $cf_old;
 }
 
-    public function keputusan($pasien_id)
+    // public function keputusan($pasien_id)
+    // {
+    //     //
+    //     if ($pasien_id == null){
+    //         $pasien_id = session() ->get('pasien_id');
+    //     } 
+    //     $data= [
+    //         'title' => 'Hasil Diagnosa',
+    //         'pasien' => Pasien::with('penyakit')->Find($pasien_id),
+    //         'gejala' => Diagnosa::with('gejala')->wherePasienId($pasien_id)->get(),
+    //         'content' => 'admin.diagnosa.keputusan'
+    //     ];
+    //     return view('admin.layouts.wrapper', $data);
+    // }
+
+    public function keputusan($pasien_id = null)
     {
-        //
         if ($pasien_id == null){
-            $pasien_id = session() ->get('pasien_id');
-        } 
-        $data= [
+            $pasien_id = session()->get('pasien_id');
+        }
+
+        // Ambil data pasien
+        $pasien = Pasien::with('penyakit')->findOrFail($pasien_id);
+        
+        // Ambil gejala user
+        $gejala = Diagnosa::with('gejala')
+                    ->wherePasienId($pasien_id)
+                    ->where('cf_hasil', '>', 0)
+                    ->get();
+
+        // === LOGIC AI (Optimized) ===
+        // Cek: Apakah kolom AI kosong? DAN Apakah ada penyakit terdeteksi?
+        if (empty($pasien->deskripsi_ai) && $pasien->penyakit) {
+            
+            // Setup Data Payload
+            $gejalaList = $gejala->map(function($g) {
+                return "- " . $g->gejala->name . " (CF: " . $g->cf_hasil . ")";
+            })->implode("\n");
+
+            $payload = [
+                'nama_pasien' => $pasien->name,
+                'umur'        => $pasien->umur,
+                'penyakit'    => $pasien->penyakit->name,
+                'cf'          => $pasien->persentase . '%',
+                'deskripsi_asli' => $pasien->penyakit->desc,
+                'solusi_asli' => $pasien->penyakit->penanganan,
+                'gejala_user' => $gejalaList
+            ];
+
+            try {
+                // Gunakan timeout pendek (misal 5 detik) untuk "Fire and Forget"
+                // ATAU gunakan timeout panjang jika Anda RELA user menunggu.
+                // Disini saya pakai timeout 30s agar user tidak menunggu terlalu lama.
+                $response = Http::timeout(180)->post(env('N8N_WEBHOOK_AI_URL'), $payload);
+
+                if ($response->successful()) {
+                    $hasil = $response->json();
+                    
+                    // Update DB
+                    $pasien->update([
+                        'deskripsi_ai'  => $hasil['deskripsi_baru'] ?? null,
+                        'penanganan_ai' => $hasil['saran_baru'] ?? null
+                    ]);
+
+                    // Refresh model agar data terbaru muncul di view sekarang
+                    $pasien->refresh(); 
+                }
+            } catch (\Exception $e) {
+                // JANGAN biarkan error n8n menghentikan halaman diagnosa
+                // Log errornya saja, user tetap bisa lihat hasil diagnosa asli (fallback)
+                \Log::error('AI Error: ' . $e->getMessage());
+            }
+        }
+
+        $data = [
             'title' => 'Hasil Diagnosa',
-            'pasien' => Pasien::with('penyakit')->Find($pasien_id),
-            'gejala' => Diagnosa::with('gejala')->wherePasienId($pasien_id)->get(),
+            'pasien' => $pasien,
+            'gejala' => $gejala,
             'content' => 'admin.diagnosa.keputusan'
         ];
+        
+
         return view('admin.layouts.wrapper', $data);
     }
 }
