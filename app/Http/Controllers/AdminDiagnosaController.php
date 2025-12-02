@@ -203,7 +203,7 @@ class AdminDiagnosaController extends Controller
                 // ATAU gunakan timeout panjang jika Anda RELA user menunggu.
                 // Disini saya pakai timeout 30s agar user tidak menunggu terlalu lama.
 
-                $response = Http::timeout(180)->post(env('N8N_WEBHOOK_AI_URL'), $payload);
+                $response = Http::timeout(240)->post(env('N8N_WEBHOOK_AI_URL'), $payload);
 
                 if ($response->successful()) {
                     $hasil = $response->json();
