@@ -170,63 +170,66 @@ class AdminDiagnosaController extends Controller
             $pasien_id = session()->get('pasien_id');
         }
 
-        // Ambil data pasien lengkap dengan relasi penyakit
+        // Ambil data pasien
         $pasien = Pasien::with('penyakit')->findOrFail($pasien_id);
         
-        // Ambil gejala yang dialami (CF > 0)
+        // Ambil gejala user
         $gejala = Diagnosa::with('gejala')
                     ->wherePasienId($pasien_id)
-                    ->where('cf_hasil', '>', 0) // Hanya ambil yang dialami
+                    ->where('cf_hasil', '>', 0)
                     ->get();
 
-        // === LOGIC INTEGRASI AI VIA N8N ===
-        // Kita hanya panggil AI jika field deskripsi_ai masih kosong (belum pernah digenerate)
+        // === LOGIC AI (Optimized) ===
+        // Cek: Apakah kolom AI kosong? DAN Apakah ada penyakit terdeteksi?
         if (empty($pasien->deskripsi_ai) && $pasien->penyakit) {
-            try {
-                // 1. Siapkan Payload (Konteks untuk AI)
-                $payload = [
-                    'nama_pasien' => $pasien->name,
-                    'umur' => $pasien->umur,
-                    'diagnosa_sistem' => $pasien->penyakit->name,
-                    'cf_persen' => round($pasien->persentase) . '%',
-                    // Kirim data asli dari DB sebagai acuan utama AI
-                    'deskripsi_original' => $pasien->penyakit->desc,
-                    'penanganan_original' => $pasien->penyakit->penanganan,
-                    // List gejala untuk personalisasi saran
-                    'gejala_dialami' => $gejala->map(fn($g) => $g->gejala->name . " (Tingkat Keyakinan: " . $g->cf_hasil . ")")->toArray()
-                ];
+            
+            // Setup Data Payload
+            $gejalaList = $gejala->map(function($g) {
+                return "- " . $g->gejala->name . " (CF: " . $g->cf_hasil . ")";
+            })->implode("\n");
 
-                // 2. Tembak ke n8n (Pastikan URL benar)
-                // Timeout diset agak lama (misal 60 detik) karena AI butuh waktu mikir
-                $response = Http::timeout(60)->post(env('N8N_WEBHOOK_URL', 'https://n8n.daus.my.id/webhook-test/generate-diagnosa-ai'), $payload);
+            $payload = [
+                'nama_pasien' => $pasien->name,
+                'umur'        => $pasien->umur,
+                'penyakit'    => $pasien->penyakit->name,
+                'cf'          => $pasien->persentase . '%',
+                'deskripsi_asli' => $pasien->penyakit->desc,
+                'solusi_asli' => $pasien->penyakit->penanganan,
+                'gejala_user' => $gejalaList
+            ];
+
+            try {
+                // Gunakan timeout pendek (misal 5 detik) untuk "Fire and Forget"
+                // ATAU gunakan timeout panjang jika Anda RELA user menunggu.
+                // Disini saya pakai timeout 30s agar user tidak menunggu terlalu lama.
+                $response = Http::timeout(120)->post(env('N8N_WEBHOOK_AI_URL'), $payload);
 
                 if ($response->successful()) {
-                    $hasilAI = $response->json();
+                    $hasil = $response->json();
                     
-                    // Asumsi n8n mengembalikan JSON: { "deskripsi_baru": "...", "saran_baru": "..." }
+                    // Update DB
                     $pasien->update([
-                        'deskripsi_ai' => $hasilAI['deskripsi_baru'] ?? $pasien->penyakit->desc,
-                        'penanganan_ai' => $hasilAI['saran_baru'] ?? $pasien->penyakit->penanganan
+                        'deskripsi_ai'  => $hasil['deskripsi_baru'] ?? null,
+                        'penanganan_ai' => $hasil['saran_baru'] ?? null
                     ]);
-                    
-                    // Refresh object pasien agar data baru masuk
-                    $pasien->refresh();
-                }
 
+                    // Refresh model agar data terbaru muncul di view sekarang
+                    $pasien->refresh(); 
+                }
             } catch (\Exception $e) {
-                // Silent error: Jika AI gagal/timeout, biarkan kosong.
-                // View akan otomatis menampilkan data original DB sebagai fallback.
-                \Log::error('Gagal generate AI: ' . $e->getMessage());
+                // JANGAN biarkan error n8n menghentikan halaman diagnosa
+                // Log errornya saja, user tetap bisa lihat hasil diagnosa asli (fallback)
+                \Log::error('AI Error: ' . $e->getMessage());
             }
         }
-        // === END LOGIC AI ===
 
         $data = [
             'title' => 'Hasil Diagnosa',
             'pasien' => $pasien,
-            'gejala' => $gejala, // Kirim variabel $gejala yang sudah difilter di atas
+            'gejala' => $gejala,
             'content' => 'admin.diagnosa.keputusan'
         ];
+        
 
         return view('admin.layouts.wrapper', $data);
     }

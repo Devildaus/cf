@@ -35,49 +35,34 @@
                                 <td>: {{ $pasien->persentase }}%</td>
                             </tr>
 
-                            <tr>
-                                <td style="vertical-align: top;">Deskripsi</td>
-                                <td>
-                                    @if(isset($pasien->penyakit))
-                                        @if(!empty($pasien->deskripsi_ai))
-                                            {{-- Tampilkan Hasil AI --}}
-                                            <div style="background: #f4f6f9; padding: 10px; border-radius: 5px; border-left: 4px solid #17a2b8;">
-                                                {!! nl2br(e($pasien->deskripsi_ai)) !!}
-                                                <div class="mt-2">
-                                                    <small class="text-muted"><i class="fas fa-robot"></i> <em>Penjelasan diperjelas oleh AI Assistant</em></small>
-                                                </div>
-                                            </div>
-                                        @else
-                                            {{-- Fallback Data Asli Database --}}
-                                            : {{ $pasien->penyakit->desc }}
-                                        @endif
+                            <div class="card">
+                                <div class="card-header">Hasil Analisa</div>
+                                <div class="card-body">
+                                    <h5>Deskripsi Penyakit</h5>
+                                    <p>
+                                        {{-- Prioritaskan hasil AI, jika kosong pakai deskripsi database --}}
+                                        {!! nl2br($pasien->deskripsi_ai ?? $pasien->penyakit->desc) !!}
+                                    </p>
+                                    @if($pasien->deskripsi_ai)
+                                        <small class="text-success"><i class="fas fa-robot"></i> Dianalisa oleh AI</small>
                                     @else
-                                        : Gejala Tidak Akurat. Silahkan Diagnosa Ulang
+                                        <small class="text-muted"><i class="fas fa-database"></i> Data Standar Medis</small>
                                     @endif
-                                </td>
-                            </tr>
 
-                            <tr>
-                                <td style="vertical-align: top;">Penanganan</td>
-                                <td>
-                                    @if(isset($pasien->penyakit))
-                                        @if(!empty($pasien->penanganan_ai))
-                                            {{-- Tampilkan Saran AI --}}
-                                            <div style="background: #e8f5e9; padding: 10px; border-radius: 5px; border-left: 4px solid #28a745;">
-                                                {!! nl2br(e($pasien->penanganan_ai)) !!}
-                                                <div class="mt-2">
-                                                    <small class="text-muted"><i class="fas fa-user-md"></i> <em>Saran penanganan personal (AI)</em></small>
-                                                </div>
-                                            </div>
-                                        @else
-                                            {{-- Fallback Data Asli Database --}}
-                                            : {{ $pasien->penyakit->penanganan }}
-                                        @endif
+                                    <hr>
+
+                                    <h5>Saran Penanganan</h5>
+                                    <p>
+                                        {!! nl2br($pasien->penanganan_ai ?? $pasien->penyakit->penanganan) !!}
+                                    </p>
+                                    
+                                    @if($pasien->penanganan_ai)
+                                        <small class="text-success"><i class="fas fa-robot"></i> Saran oleh AI</small>
                                     @else
-                                        : Gejala Tidak Akurat. Silahkan Diagnosa Ulang
+                                        <small class="text-muted"><i class="fas fa-database"></i> Data Standar Medis</small>
                                     @endif
-                                </td>
-                            </tr>
+                                </div>
+                            </div>
 
                         </table>
                     </div>

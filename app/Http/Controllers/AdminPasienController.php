@@ -4,15 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Pasien;
-use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\Diagnosa;
 use Illuminate\Support\Facades\Http;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class AdminPasienController extends Controller
 {
+    // ... Method index, create, store, edit, update, destroy, print BIARKAN SAMA ...
+    // ... (Saya skip kode CRUD standar agar fokus ke perbaikan WA) ...
+
     public function index()
     {
-        //
         $data= [
             'title' => 'Manajemen Pasien',
             'pasien' => Pasien::with('penyakit')->orderBy('created_at','DESC')->paginate(10),
@@ -20,236 +22,173 @@ class AdminPasienController extends Controller
         ];
         return view('admin.layouts.wrapper', $data);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-        
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-        
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-
-        // $role= Role::with('gejala')->wherepasien_id($id)->get();
-        // $data= [
-        //     'title' => 'Pasien',
-        //     'pasien' => Pasien::find($id),
-        //     'gejala' => Gejala::Get(),
-        //     'role' => $role,
-        //     'content' => 'admin.pasien.show'
-        // ];
-        // return view('admin.layouts.wrapper', $data);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-        
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-        
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id)
     {
-        //
-        // die('masuk');
         $pasien = Pasien::find($id);
-        $pasien->delete();
-        Alert::success('Success', 'Data berhasil dihapus');
+        if($pasien){
+             $pasien->delete();
+             Alert::success('Success', 'Data berhasil dihapus');
+        } else {
+             Alert::error('Error', 'Data tidak ditemukan');
+        }
         return redirect('/admin/pasien');
     }
 
     public function print($pasien_id)
     {
-        
         $data= [
             'title' => 'Hasil Diagnosa',
-            'pasien' => Pasien::with('penyakit')->Find($pasien_id),
+            'pasien' => Pasien::with('penyakit')->findOrFail($pasien_id), // Pakai findOrFail biar aman
             'gejala' => Diagnosa::with('gejala')->wherePasienId($pasien_id)->get(),            
         ];
         return view('admin.pasien.cetak', $data);
     }
 
-
+    // === AREA LOGIKA PENGIRIMAN WA ===
 
     public function showKirimWaForm($pasien_id)
     {
-        $pasien = Pasien::with('penyakit')->find($pasien_id);
-        $gejala = Diagnosa::with('gejala')->wherePasienId($pasien_id)->get();
+        $pasien = Pasien::with('penyakit')->findOrFail($pasien_id);
+        
+        // Ambil gejala yang CF-nya tidak 0 (hanya yang dialami)
+        $gejala = Diagnosa::with('gejala')
+                    ->wherePasienId($pasien_id)
+                    ->where('cf_hasil', '!=', 0)
+                    ->get();
 
         $data = [
             'title' => 'Kirim Hasil ke WhatsApp',
             'pasien' => $pasien,
             'gejala' => $gejala,
-            'preview_pesan' => $this->formatPreviewPesan($pasien, $gejala),
+            // Reuse satu fungsi formatter untuk preview
+            'preview_pesan' => $this->generateMessage($pasien, $gejala, true), 
             'content' => 'admin.pasien.kirim-wa'
         ];
         return view('admin.layouts.wrapper', $data);
     }
 
-    /**
-     * Format preview pesan untuk ditampilkan di form
-     */
-    private function formatPreviewPesan($pasien, $gejala)
-    {
-        $penyakit = $pasien->penyakit;
-        $pesan = "HASIL DIAGNOSA PENYAKIT\n\n";
-        $pesan .= "Data Pasien:\n";
-        $pesan .= "• Nama: {$pasien->name}\n";
-        $pesan .= "• Umur: {$pasien->umur} Tahun\n\n";
-        
-        $pesan .= "Hasil Diagnosa:\n";
-        if (isset($penyakit)) {
-            $pesan .= "• Nama Penyakit: {$penyakit->name}\n";
-            $pesan .= "• Tingkat Kepercayaan: " . round($pasien->persentase) . "%\n";
-        } else {
-            $pesan .= "• Hasil: Gejala Tidak Akurat\n";
-        }
-        
-        $pesan .= "\nGejala yang Dialami:\n";
-        $counter = 1;
-        foreach ($gejala as $item) {
-            if ($item->cf_hasil != 0) {
-                $pesan .= "{$counter}. {$item->gejala->name}\n";
-                $counter++;
-            }
-        }
-        
-        $pesan .= "\n---\n";
-        $pesan .= "Catatan: Hasil ini merupakan diagnosa sistem, disarankan untuk konsultasi dengan dokter.";
-        
-        return $pesan;
-    }
-
-    /**
-     * Kirim hasil diagnosa ke WhatsApp
-     */
     public function kirimWhatsApp(Request $request, $pasien_id)
     {
         $request->validate([
-            'nomor_wa' => 'required|string'
+            'nomor_wa' => 'required|numeric' // Pastikan angka saja
         ]);
 
         try {
-            $pasien = Pasien::with('penyakit')->find($pasien_id);
+            $pasien = Pasien::with('penyakit')->findOrFail($pasien_id);
             $gejala = Diagnosa::with('gejala')->wherePasienId($pasien_id)->where('cf_hasil', '!=', 0)->get();
 
-            // 1. Format nomor WhatsApp (Hapus karakter selain angka)
-            $nomor_wa = preg_replace('/[^0-9]/', '', $request->nomor_wa);
-            
-            // Fonnte rekomendasi format 08xx atau 62xx. Kita pastikan formatnya benar.
-            if (substr($nomor_wa, 0, 1) === '0') {
-                $nomor_wa = '62' . substr($nomor_wa, 1);
-            }
+            // 1. Sanitasi Nomor HP (Hapus karakter aneh, handle +62, 08, 62)
+            $nomor_wa = $this->sanitizePhoneNumber($request->nomor_wa);
 
-            // 2. Siapkan Pesan
-            $pesan = $this->formatPesanWhatsApp($pasien, $gejala);
+            // 2. Generate Pesan
+            $pesan = $this->generateMessage($pasien, $gejala, false); // false = format WA (bold pake *)
 
-            // 3. Kirim Request ke API Fonnte
-            // Pastikan mengambil token dari .env
-            $token = env('FONNTE_TOKEN'); 
+            // 3. Ambil Token dari Config (Bukan env langsung)
+            $token = config('services.fonnte.token');
 
             if(empty($token)){
-                Alert::error('Gagal', 'Token Fonnte belum disetting di file .env');
-                return redirect()->back();
+                Alert::error('Gagal', 'Token Fonnte belum disetting!');
+                return back();
             }
 
-            $response = Http::withHeaders([
-                'Authorization' => $token,
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $nomor_wa,
-                'message' => $pesan,
-                'countryCode' => '62', // opsional
-            ]);
+            // 4. Kirim Request (Pakai Timeout agar tidak loading selamanya jika fonnte down)
+            $response = Http::timeout(10) // Maksimal loading 10 detik
+                ->withHeaders(['Authorization' => $token])
+                ->post('https://api.fonnte.com/send', [
+                    'target' => $nomor_wa,
+                    'message' => $pesan,
+                    'countryCode' => '62', 
+                ]);
 
-            // 4. Cek Respon API
-            $respBody = json_decode($response->body());
+            // 5. Cek Response
+            $respBody = $response->json(); // Langsung array
 
-            // Fonnte mengembalikan status true jika request diterima server mereka
-            if ($response->successful() && isset($respBody->status) && $respBody->status == true) {
-                Alert::success('Berhasil', 'Pesan WhatsApp sedang dikirim oleh sistem.');
+            if ($response->successful() && ($respBody['status'] ?? false) == true) {
+                Alert::success('Berhasil', 'Pesan dalam antrian pengiriman WhatsApp.');
             } else {
-                $reason = isset($respBody->reason) ? $respBody->reason : 'Gagal menghubungi server WhatsApp.';
-                Alert::error('Gagal', 'Pesan gagal dikirim. ' . $reason);
+                $reason = $respBody['reason'] ?? 'Masalah koneksi ke Fonnte';
+                Alert::error('Gagal', 'Fonnte Error: ' . $reason);
             }
 
         } catch (\Exception $e) {
-            Alert::error('Error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
+            // Log error asli untuk developer
+            \Log::error('WA Error: ' . $e->getMessage());
+            Alert::error('Error', 'Terjadi kesalahan sistem. Cek log.');
         }
 
-        // Redirect kembali ke halaman kirim wa (refresh)
-        return redirect()->back();
+        return back();
     }
 
     /**
-     * Format pesan WhatsApp untuk dikirim
+     * Satu fungsi untuk generate pesan (Preview & WA asli)
+     * Agar tidak kerja 2x (DRY Principle)
      */
-    private function formatPesanWhatsApp($pasien, $gejala)
+    private function generateMessage($pasien, $gejala, $isPreview = false)
     {
         $penyakit = $pasien->penyakit;
         
-        $pesan = "🔬 *HASIL DIAGNOSA PENYAKIT*\n\n";
-        $pesan .= "📋 *Data Pasien:*\n";
+        // Simbol formatting (Preview pakai HTML/Plain, WA pakai Markdown)
+        $b_open  = $isPreview ? "" : "*";
+        $b_close = $isPreview ? "" : "*";
+
+        $pesan = "🔬 {$b_open}HASIL DIAGNOSA PENYAKIT{$b_close}\n\n";
+        
+        $pesan .= "📋 {$b_open}Data Pasien:{$b_close}\n";
         $pesan .= "• Nama: {$pasien->name}\n";
         $pesan .= "• Umur: {$pasien->umur} Tahun\n\n";
         
-        $pesan .= "🏥 *Hasil Diagnosa:*\n";
+        $pesan .= "🏥 {$b_open}Hasil Diagnosa:{$b_close}\n";
         
-        if (isset($penyakit)) {
-            $pesan .= "• Nama Penyakit: {$penyakit->name}\n";
-            $pesan .= "• Tingkat Kepercayaan: " . round($pasien->persentase) . "%\n\n";
+        if ($penyakit) {
+            $pesan .= "• Penyakit: {$penyakit->name}\n";
+            $pesan .= "• Akurasi: " . round($pasien->persentase) . "%\n\n";
             
-            $pesan .= "📝 *Deskripsi:*\n";
+            $pesan .= "📝 {$b_open}Deskripsi:{$b_close}\n";
             $pesan .= "{$penyakit->desc}\n\n";
             
-            $pesan .= "💊 *Penanganan:*\n";
+            $pesan .= "💊 {$b_open}Penanganan:{$b_close}\n";
             $pesan .= "{$penyakit->penanganan}\n\n";
         } else {
-            $pesan .= "• Hasil: Gejala Tidak Akurat. Silahkan Diagnosa Ulang\n\n";
+            $pesan .= "• Hasil: Gejala Tidak Akurat / Belum Terdeteksi\n\n";
+        }
+
+        // Cek hasil AI (Jika sudah implementasi kode sebelumnya)
+        if (!empty($pasien->deskripsi_ai)) {
+            $pesan .= "🤖 {$b_open}Analisa Tambahan AI:{$b_close}\n";
+            $pesan .= "{$pasien->deskripsi_ai}\n\n";
         }
         
-        $pesan .= "🩺 *Gejala yang Dialami:*\n";
-        $counter = 1;
-        foreach ($gejala as $item) {
-            $pesan .= "{$counter}. {$item->gejala->name} (Nilai: {$item->cf_hasil})\n";
-            $counter++;
+        $pesan .= "🩺 {$b_open}Gejala Dialami:{$b_close}\n";
+        foreach ($gejala as $index => $item) {
+            $no = $index + 1;
+            $pesan .= "{$no}. {$item->gejala->name} ({$item->cf_hasil})\n";
         }
         
         $pesan .= "\n---\n";
-        $pesan .= "*Catatan:* Hasil ini merupakan diagnosa sistem, disarankan untuk konsultasi dengan dokter untuk penanganan lebih lanjut.\n\n";
-        $pesan .= "Terima kasih 🙏";
+        $pesan .= "_{$b_open}Catatan:{$b_close} Hasil ini diagnosa sistem, segera konsultasi ke dokter._";
 
         return $pesan;
     }
 
-    
+    /**
+     * Helper sanitize nomor HP yang lebih robust
+     */
+    private function sanitizePhoneNumber($number)
+    {
+        // Hapus semua karakter kecuali angka
+        $number = preg_replace('/[^0-9]/', '', $number);
+        
+        // Jika dimulai dengan '08', ganti '0' dengan '62'
+        if (substr($number, 0, 2) === '08') {
+            return '62' . substr($number, 1);
+        }
+        
+        // Jika dimulai dengan '8', tambahkan '62' di depan
+        if (substr($number, 0, 1) === '8') {
+            return '62' . $number;
+        }
+
+        return $number;
+    }
 }
