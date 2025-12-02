@@ -19,6 +19,15 @@ return new class extends Migration
             $table->float('persentase')->nullable();
             $table->foreignId('penyakit_id')->nullable();
             $table->string('nama_penyakit')->nullable();
+
+            // Log Integrasi n8n & WhatsApp (Request Anda: sebelum & sesudah diolah)
+            $table->json('pesan_input')->nullable()->comment('Data mentah JSON yang dikirim ke n8n');
+            $table->text('pesan_output')->nullable()->comment('Pesan final hasil olahan n8n yang dikirim ke WA');
+            
+            // Cache Hasil AI (Agar tidak generate ulang terus menerus)
+            $table->text('deskripsi_ai')->nullable();
+            $table->text('penanganan_ai')->nullable();
+
             $table->timestamps();
         });
     }

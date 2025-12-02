@@ -8,6 +8,7 @@ use App\Models\Gejala;
 use App\Models\Role;
 use App\Models\Diagnosa;
 use App\Models\Penyakit;
+use Illuminate\Support\Facades\Http;
 
 class AdminDiagnosaController extends Controller
 {
@@ -148,18 +149,85 @@ class AdminDiagnosaController extends Controller
     return $cf_old;
 }
 
-    public function keputusan($pasien_id)
+    // public function keputusan($pasien_id)
+    // {
+    //     //
+    //     if ($pasien_id == null){
+    //         $pasien_id = session() ->get('pasien_id');
+    //     } 
+    //     $data= [
+    //         'title' => 'Hasil Diagnosa',
+    //         'pasien' => Pasien::with('penyakit')->Find($pasien_id),
+    //         'gejala' => Diagnosa::with('gejala')->wherePasienId($pasien_id)->get(),
+    //         'content' => 'admin.diagnosa.keputusan'
+    //     ];
+    //     return view('admin.layouts.wrapper', $data);
+    // }
+
+    public function keputusan($pasien_id = null)
     {
-        //
         if ($pasien_id == null){
-            $pasien_id = session() ->get('pasien_id');
-        } 
-        $data= [
+            $pasien_id = session()->get('pasien_id');
+        }
+
+        // Ambil data pasien lengkap dengan relasi penyakit
+        $pasien = Pasien::with('penyakit')->findOrFail($pasien_id);
+        
+        // Ambil gejala yang dialami (CF > 0)
+        $gejala = Diagnosa::with('gejala')
+                    ->wherePasienId($pasien_id)
+                    ->where('cf_hasil', '>', 0) // Hanya ambil yang dialami
+                    ->get();
+
+        // === LOGIC INTEGRASI AI VIA N8N ===
+        // Kita hanya panggil AI jika field deskripsi_ai masih kosong (belum pernah digenerate)
+        if (empty($pasien->deskripsi_ai) && $pasien->penyakit) {
+            try {
+                // 1. Siapkan Payload (Konteks untuk AI)
+                $payload = [
+                    'nama_pasien' => $pasien->name,
+                    'umur' => $pasien->umur,
+                    'diagnosa_sistem' => $pasien->penyakit->name,
+                    'cf_persen' => round($pasien->persentase) . '%',
+                    // Kirim data asli dari DB sebagai acuan utama AI
+                    'deskripsi_original' => $pasien->penyakit->desc,
+                    'penanganan_original' => $pasien->penyakit->penanganan,
+                    // List gejala untuk personalisasi saran
+                    'gejala_dialami' => $gejala->map(fn($g) => $g->gejala->name . " (Tingkat Keyakinan: " . $g->cf_hasil . ")")->toArray()
+                ];
+
+                // 2. Tembak ke n8n (Pastikan URL benar)
+                // Timeout diset agak lama (misal 60 detik) karena AI butuh waktu mikir
+                $response = Http::timeout(60)->post(env('N8N_WEBHOOK_URL', 'https://n8n.daus.my.id/webhook-test/generate-diagnosa-ai'), $payload);
+
+                if ($response->successful()) {
+                    $hasilAI = $response->json();
+                    
+                    // Asumsi n8n mengembalikan JSON: { "deskripsi_baru": "...", "saran_baru": "..." }
+                    $pasien->update([
+                        'deskripsi_ai' => $hasilAI['deskripsi_baru'] ?? $pasien->penyakit->desc,
+                        'penanganan_ai' => $hasilAI['saran_baru'] ?? $pasien->penyakit->penanganan
+                    ]);
+                    
+                    // Refresh object pasien agar data baru masuk
+                    $pasien->refresh();
+                }
+
+            } catch (\Exception $e) {
+                // Silent error: Jika AI gagal/timeout, biarkan kosong.
+                // View akan otomatis menampilkan data original DB sebagai fallback.
+                \Log::error('Gagal generate AI: ' . $e->getMessage());
+            }
+        }
+        // === END LOGIC AI ===
+
+        $data = [
             'title' => 'Hasil Diagnosa',
-            'pasien' => Pasien::with('penyakit')->Find($pasien_id),
-            'gejala' => Diagnosa::with('gejala')->wherePasienId($pasien_id)->get(),
+            'pasien' => $pasien,
+            'gejala' => $gejala, // Kirim variabel $gejala yang sudah difilter di atas
             'content' => 'admin.diagnosa.keputusan'
         ];
+
         return view('admin.layouts.wrapper', $data);
     }
 }

@@ -36,12 +36,47 @@
                             </tr>
 
                             <tr>
-                                <td>Deskripsi</td>
-                                <td>: {{ isset($pasien->penyakit) ? $pasien->penyakit->desc : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
+                                <td style="vertical-align: top;">Deskripsi</td>
+                                <td>
+                                    @if(isset($pasien->penyakit))
+                                        @if(!empty($pasien->deskripsi_ai))
+                                            {{-- Tampilkan Hasil AI --}}
+                                            <div style="background: #f4f6f9; padding: 10px; border-radius: 5px; border-left: 4px solid #17a2b8;">
+                                                {!! nl2br(e($pasien->deskripsi_ai)) !!}
+                                                <div class="mt-2">
+                                                    <small class="text-muted"><i class="fas fa-robot"></i> <em>Penjelasan diperjelas oleh AI Assistant</em></small>
+                                                </div>
+                                            </div>
+                                        @else
+                                            {{-- Fallback Data Asli Database --}}
+                                            : {{ $pasien->penyakit->desc }}
+                                        @endif
+                                    @else
+                                        : Gejala Tidak Akurat. Silahkan Diagnosa Ulang
+                                    @endif
+                                </td>
                             </tr>
+
                             <tr>
-                                <td>Penanganan</td>
-                                <td>:  {{ isset($pasien->penyakit) ? $pasien->penyakit->penanganan : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
+                                <td style="vertical-align: top;">Penanganan</td>
+                                <td>
+                                    @if(isset($pasien->penyakit))
+                                        @if(!empty($pasien->penanganan_ai))
+                                            {{-- Tampilkan Saran AI --}}
+                                            <div style="background: #e8f5e9; padding: 10px; border-radius: 5px; border-left: 4px solid #28a745;">
+                                                {!! nl2br(e($pasien->penanganan_ai)) !!}
+                                                <div class="mt-2">
+                                                    <small class="text-muted"><i class="fas fa-user-md"></i> <em>Saran penanganan personal (AI)</em></small>
+                                                </div>
+                                            </div>
+                                        @else
+                                            {{-- Fallback Data Asli Database --}}
+                                            : {{ $pasien->penyakit->penanganan }}
+                                        @endif
+                                    @else
+                                        : Gejala Tidak Akurat. Silahkan Diagnosa Ulang
+                                    @endif
+                                </td>
                             </tr>
 
                         </table>
