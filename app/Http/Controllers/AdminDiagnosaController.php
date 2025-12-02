@@ -202,6 +202,7 @@ class AdminDiagnosaController extends Controller
                 // Gunakan timeout pendek (misal 5 detik) untuk "Fire and Forget"
                 // ATAU gunakan timeout panjang jika Anda RELA user menunggu.
                 // Disini saya pakai timeout 30s agar user tidak menunggu terlalu lama.
+
                 $response = Http::timeout(180)->post(env('N8N_WEBHOOK_AI_URL'), $payload);
 
                 if ($response->successful()) {
