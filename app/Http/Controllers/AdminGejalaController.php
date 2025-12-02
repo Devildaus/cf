@@ -16,7 +16,7 @@ class AdminGejalaController extends Controller
         //
         $data= [
             'title' => 'Manajemen Gejala',
-            'gejala' => Gejala::get(),
+            'gejala' => Gejala::orderBy('created_at','DESC')->paginate(10),
             'content' => 'admin.gejala.index'
         ];
         return view('admin.layouts.wrapper', $data);
@@ -45,6 +45,8 @@ class AdminGejalaController extends Controller
             'kode_gejala' => 'required|unique:gejalas',
             'name' => 'required',
             'nilai_cf' => 'required',
+            'jumlah_pilihan' => 'required',
+            'penjelasan_pilihan' => 'nullable|string',
 
         ]);
 
@@ -83,9 +85,11 @@ class AdminGejalaController extends Controller
         //
         $gejala = Gejala::find($id);
         $data = $request->validate([
-            'kode_gejala' => 'required|unique:gejalas',
+            'kode_gejala' => 'required|unique:gejalas,kode_gejala,' . $id,
             'name' => 'required',
             'nilai_cf' => 'required',
+            'jumlah_pilihan' => 'required',
+            'penjelasan_pilihan' => 'nullable|string',
         ]);
 
         $gejala->update($data);

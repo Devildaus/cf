@@ -68,5 +68,9 @@ Route::prefix('/admin')->middleware('auth')->group(function (){
 
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // web.php - tambahkan route ini setelah route cetak
+    Route::get('/pasien/kirim-wa/{id}', [AdminPasienController::class, 'showKirimWaForm']);
+    Route::post('/pasien/kirim-wa/{id}', [AdminPasienController::class, 'kirimWhatsApp']);
     
 });

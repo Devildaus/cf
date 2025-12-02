@@ -89,16 +89,16 @@
                                 <div class="col-md-6">
                                     <div class="callout callout-success">
                                         <h5><i class="fas fa-bolt mr-2"></i>Quick Actions</h5>
-                                        <div class="d-grid gap-2">
-                                            <a href="/admin/diagnosa" class="btn btn-primary btn-sm mb-2">
-                                                <i class="fas fa-spinner mr-1"></i> Mulai Diagnosa
+                                        <div class="d-flex flex-column gap-2">
+                                            <a href="/admin/diagnosa" class="btn btn-primary btn-block mb-2 py-2">
+                                                <i class="fas fa-stethoscope mr-2"></i> Mulai Diagnosa
                                             </a>
                                             @if(auth()->user()->role == 'admin')
-                                            <a href="/admin/pasien" class="btn btn-success btn-sm mb-2">
-                                                <i class="fas fa-users mr-1"></i> Kelola Pasien
+                                            <a href="/admin/pasien" class="btn btn-success btn-block mb-2 py-2">
+                                                <i class="fas fa-user-injured mr-2"></i> Kelola Pasien
                                             </a>
-                                            <a href="/admin/penyakit" class="btn btn-info btn-sm">
-                                                <i class="fas fa-calendar mr-1"></i> Data Penyakit
+                                            <a href="/admin/penyakit" class="btn btn-info btn-block py-2">
+                                                <i class="fas fa-disease mr-2"></i> Data Penyakit
                                             </a>
                                             @endif
                                         </div>
@@ -191,19 +191,6 @@
                     @endif
 
 
-                    <!-- Support Card -->
-                    <div class="card card-info">
-                        <div class="card-header">
-                            <h3 class="card-title">Butuh Bantuan?</h3>
-                        </div>
-                        <div class="card-body text-center">
-                            <i class="fas fa-headset fa-2x text-info mb-3"></i>
-                            <p class="mb-3">Tim support siap membantu Anda.</p>
-                            <button class="btn btn-info btn-sm">
-                                <i class="fas fa-envelope mr-1"></i> Hubungi
-                            </button>
-                        </div>
-                    </div>
                 </div><!-- /.Right col -->
             </div><!-- /.row -->
         </div><!--/. container-fluid -->

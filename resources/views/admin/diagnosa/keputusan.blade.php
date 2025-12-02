@@ -5,6 +5,9 @@
 
                 <a href="/admin/diagnosa" class="btn btn-primary mb-2"><i class="fas fa-file"></i> Diagnosa Baru</a>
                 <a href="/admin/pasien/cetak/{{ $pasien->id }}" target="blank" class="btn btn-warning mb-2"><i class="fas fa-print"></i> Cetak</a>
+                <a href="/admin/pasien/kirim-wa/{{ $pasien->id }}" class="btn btn-success mb-2">
+                    <i class="fab fa-whatsapp"></i> Kirim WhatsApp
+                </a>
 
                 <div class="row">
                     <div class="col-md-6">

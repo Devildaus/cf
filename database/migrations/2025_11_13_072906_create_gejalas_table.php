@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('kode_gejala')->unique();
             $table->string('name');
             $table->float('nilai_cf');
+            $table->int('jumlah_pilihan');
+            $table->string('penjelasan_pilihan');
             $table->timestamps();
         });
     }

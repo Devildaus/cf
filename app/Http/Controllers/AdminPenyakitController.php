@@ -60,10 +60,14 @@ class AdminPenyakitController extends Controller
         //
 
         $role= Role::with('gejala')->wherepenyakit_id($id)->get();
+        $role = $role->sortBy(function($role) {
+            // Mengambil kode_gejala dari relasi Gejala
+            return optional($role->gejala)->kode_gejala;
+        })->values();
         $data= [
             'title' => 'Penyakit',
             'penyakit' => Penyakit::find($id),
-            'gejala' => Gejala::Get(),
+            'gejala' => Gejala::orderBy('kode_gejala', 'asc')->get(),
             'role' => $role,
             'content' => 'admin.penyakit.show'
         ];
@@ -116,10 +120,45 @@ class AdminPenyakitController extends Controller
     }
 
     function addGejala(Request $request){
+        
+        // 1. Validasi Input
+        $request->validate([
+            'penyakit_id' => 'required|exists:penyakits,id',
+            'gejala_id' => 'required|exists:gejalas,id',
+            // bobot_cf dibuat nullable, tetapi harus numeric jika diisi
+            'bobot_cf' => 'nullable|numeric|min:0|max:1', 
+        ]);
+
+        $bobot_cf_final = $request->bobot_cf;
+        
+        // 2. >> LOGIKA DEFAULT CF <<
+        // Jika bobot_cf kosong/null, ambil nilai nilai_cf dari tabel gejalas
+        if (empty($bobot_cf_final) || $bobot_cf_final === null) {
+            $gejala = Gejala::find($request->gejala_id);
+            
+            // Asumsi: kolom bobot CF default di tabel gejalas bernama `nilai_cf`
+            if ($gejala) {
+                 $bobot_cf_final = $gejala->nilai_cf; 
+            } else {
+                // Fallback jika gejala tidak ditemukan
+                $bobot_cf_final = 0.0; 
+            }
+        }
+        
+        // 3. Pengecekan Duplikasi
+        $existingRole = Role::where('penyakit_id', $request->penyakit_id)
+                           ->where('gejala_id', $request->gejala_id)
+                           ->first();
+        
+        if ($existingRole) {
+            Alert::warning('Warning', 'Gejala sudah ada pada penyakit ini.');
+            return redirect('/admin/penyakit/'.$request->penyakit_id);
+        }
+
         $data = [
             'penyakit_id' => $request->penyakit_id,
             'gejala_id' => $request->gejala_id,
-            'bobot_cf' => $request->bobot_cf,
+            'bobot_cf' => $bobot_cf_final, // Gunakan nilai CF yang sudah ditentukan
         ];
 
         Role::create($data);

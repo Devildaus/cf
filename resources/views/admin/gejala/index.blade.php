@@ -10,7 +10,9 @@
                         <th>No</th>
                         <th>Kode Gejala</th>
                         <th>Nama</th>
+                        <th>Penjelasan Nilai Normal dan Tidak Normalnya</th>
                         <th>Nilai CF</th>
+                        <th>Jumlah Pilihan</th>
                         <th>Action</th>
                     </tr>
 
@@ -20,7 +22,9 @@
                         <td> {{ $loop->iteration }} </td>
                         <td> {{ $item->kode_gejala }} </td>
                         <td> {{ $item->name }} </td>
+                        <td> {{ $item->penjelasan_pilihan }} </td>
                         <td> {{ $item->nilai_cf }} </td>
+                        <td> {{ $item->jumlah_pilihan }} </td>
                         <td>
                             <div class="d-flex">
                                 <a href="/admin/gejala/{{ $item->id }}/edit" class="btn btn-info mr-2"><i class="fas fa-edit"></i> Edit</a>
@@ -35,6 +39,7 @@
 
                     @endforeach
                 </table>
+                {{ $gejala->links() }}
             </div>
         </div>
     </div>
