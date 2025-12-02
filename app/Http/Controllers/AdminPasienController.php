@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Pasien;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\Diagnosa;
+use Illuminate\Support\Facades\Http;
 
 class AdminPasienController extends Controller
 {
@@ -158,27 +159,55 @@ class AdminPasienController extends Controller
             'nomor_wa' => 'required|string'
         ]);
 
-        $pasien = Pasien::with('penyakit')->find($pasien_id);
-        $gejala = Diagnosa::with('gejala')->wherePasienId($pasien_id)->where('cf_hasil', '!=', 0)->get();
+        try {
+            $pasien = Pasien::with('penyakit')->find($pasien_id);
+            $gejala = Diagnosa::with('gejala')->wherePasienId($pasien_id)->where('cf_hasil', '!=', 0)->get();
 
-        // Format nomor WhatsApp (hilangkan karakter selain angka)
-        $nomor_wa = preg_replace('/[^0-9]/', '', $request->nomor_wa);
-        
-        // Jika nomor diawali dengan 0, ganti dengan 62
-        if (substr($nomor_wa, 0, 1) === '0') {
-            $nomor_wa = '62' . substr($nomor_wa, 1);
+            // 1. Format nomor WhatsApp (Hapus karakter selain angka)
+            $nomor_wa = preg_replace('/[^0-9]/', '', $request->nomor_wa);
+            
+            // Fonnte rekomendasi format 08xx atau 62xx. Kita pastikan formatnya benar.
+            if (substr($nomor_wa, 0, 1) === '0') {
+                $nomor_wa = '62' . substr($nomor_wa, 1);
+            }
+
+            // 2. Siapkan Pesan
+            $pesan = $this->formatPesanWhatsApp($pasien, $gejala);
+
+            // 3. Kirim Request ke API Fonnte
+            // Pastikan mengambil token dari .env
+            $token = env('FONNTE_TOKEN'); 
+
+            if(empty($token)){
+                Alert::error('Gagal', 'Token Fonnte belum disetting di file .env');
+                return redirect()->back();
+            }
+
+            $response = Http::withHeaders([
+                'Authorization' => $token,
+            ])->post('https://api.fonnte.com/send', [
+                'target' => $nomor_wa,
+                'message' => $pesan,
+                'countryCode' => '62', // opsional
+            ]);
+
+            // 4. Cek Respon API
+            $respBody = json_decode($response->body());
+
+            // Fonnte mengembalikan status true jika request diterima server mereka
+            if ($response->successful() && isset($respBody->status) && $respBody->status == true) {
+                Alert::success('Berhasil', 'Pesan WhatsApp sedang dikirim oleh sistem.');
+            } else {
+                $reason = isset($respBody->reason) ? $respBody->reason : 'Gagal menghubungi server WhatsApp.';
+                Alert::error('Gagal', 'Pesan gagal dikirim. ' . $reason);
+            }
+
+        } catch (\Exception $e) {
+            Alert::error('Error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
 
-        // Buat pesan WhatsApp
-        $pesan = $this->formatPesanWhatsApp($pasien, $gejala);
-
-        // Encode pesan untuk URL
-        $pesan_encoded = urlencode($pesan);
-
-        // Redirect ke WhatsApp
-        $wa_url = "https://wa.me/{$nomor_wa}?text={$pesan_encoded}";
-
-        return redirect($wa_url);
+        // Redirect kembali ke halaman kirim wa (refresh)
+        return redirect()->back();
     }
 
     /**
