@@ -47,6 +47,13 @@
             <p>Diagnosa</p>
           </a>
         </li>
+
+        <li class="nav-item">
+            <a href="{{ route('chatbot.index') }}" class="nav-link {{ Request::is('konsultasi-diabetes*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-robot"></i>
+                <p>Konsultasi AI</p>
+            </a>
+        </li>
         
         @if (auth()->user()->role == 'admin')
         <!-- Pasien -->

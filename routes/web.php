@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminPasienController;
 use App\Http\Controllers\AdminDiagnosaController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ChatbotController;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,5 +73,8 @@ Route::prefix('/admin')->middleware('auth')->group(function (){
     // web.php - tambahkan route ini setelah route cetak
     Route::get('/pasien/kirim-wa/{id}', [AdminPasienController::class, 'showKirimWaForm']);
     Route::post('/pasien/kirim-wa/{id}', [AdminPasienController::class, 'kirimWhatsApp']);
+
+    Route::get('/konsultasi-diabetes', [ChatbotController::class, 'index'])->name('chatbot.index');
+    Route::post('/konsultasi-diabetes/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
     
 });
