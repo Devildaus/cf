@@ -21,6 +21,17 @@ class AdminPasienController extends Controller
         return view('admin.layouts.wrapper', $data);
     }
 
+    public function print($id)
+    {
+        $pasien = Pasien::with('penyakit')->findOrFail($id);
+
+        // Gunakan LOGIKA YANG SAMA DENGAN WHATSAPP
+        $gejala = $this->getRelevantSymptoms($pasien);
+
+        return view('admin.pasien.cetak', compact('pasien', 'gejala'));
+    }
+
+
     public function showKirimWaForm($pasien_id)
     {
         $pasien = Pasien::with('penyakit')->findOrFail($pasien_id);
@@ -104,33 +115,38 @@ class AdminPasienController extends Controller
     private function generateMessage($pasien, $gejala, $isPreview = false)
     {
         $penyakit = $pasien->penyakit;
+        
+        // Simbol formatting (Preview pakai HTML/Plain, WA pakai Markdown)
         $b_open  = $isPreview ? "" : "*";
         $b_close = $isPreview ? "" : "*";
 
         $pesan = "🔬 {$b_open}HASIL DIAGNOSA PENYAKIT{$b_close}\n\n";
+        
         $pesan .= "📋 {$b_open}Data Pasien:{$b_close}\n";
         $pesan .= "• Nama: {$pasien->name}\n";
         $pesan .= "• Umur: {$pasien->umur} Tahun\n\n";
-
+        
         $pesan .= "🏥 {$b_open}Hasil Diagnosa:{$b_close}\n";
-
+        
         if ($penyakit) {
             $pesan .= "• Penyakit: {$penyakit->name}\n";
             $pesan .= "• Akurasi: " . round($pasien->persentase) . "%\n\n";
-
-            $deskripsi = !empty($penyakit->deskripsi_ai) ? $penyakit->deskripsi_ai : $penyakit->desc;
+            
+            // Logika Pengambilan Deskripsi (Prioritas AI)
+            // Jika hasil AI pada tabel Pasien ada, pakai itu. Jika kosong, fallback ke deskripsi asli penyakit.
+            $deskripsi = !empty($pasien->deskripsi_ai) ? $pasien->deskripsi_ai : $penyakit->desc;
             $pesan .= "📝 {$b_open}Deskripsi:{$b_close}\n{$deskripsi}\n\n";
-
-            $penanganan = !empty($penyakit->penanganan_ai) ? $penyakit->penanganan_ai : $penyakit->penanganan;
-            $pesan .= "💊 {$b_open}Penanganan:{$b_close}\n{$penanganan}\n\n";
+            
+            // Logika Pengambilan Penanganan (Prioritas AI)
+            // Mengambil dari penanganan_ai milik pasien, jika kosong fallback ke penanganan asli.
+            $penanganan = !empty($pasien->penanganan_ai) ? $pasien->penanganan_ai : $penyakit->penanganan;
+            $pesan .= "💊 {$b_open}Saran Penanganan:{$b_close}\n{$penanganan}\n\n";
+            
         } else {
             $pesan .= "• Hasil: Gejala Tidak Akurat / Belum Terdeteksi\n\n";
         }
-
-        if (!empty($pasien->deskripsi_ai)) {
-            $pesan .= "🤖 {$b_open}Analisa Tambahan AI:{$b_close}\n{$pasien->deskripsi_ai}\n\n";
-        }
-
+        
+        // Menampilkan Gejala Relevan (Hanya yang cf_hasil > 0)
         if ($gejala->count() > 0) {
             $pesan .= "🩺 {$b_open}Gejala Relevan Dialami:{$b_close}\n";
             foreach ($gejala as $index => $item) {
@@ -138,9 +154,9 @@ class AdminPasienController extends Controller
                 $pesan .= "{$no}. {$item->gejala->name}\n";
             }
         }
-
+        
         $pesan .= "\n---\n";
-        $pesan .= "_{$b_open}Catatan:{$b_close} Hasil diagnosa sistem Certainty Factor. Segera konsultasikan ke tenaga medis di Klinik Nediva Husada._";
+        $pesan .= "_{$b_open}Catatan:{$b_close} Hasil ini merupakan diagnosa awal sistem menggunakan metode Certainty Factor dan Analisa AI. Segera konsultasikan ke Klinik Nediva Husada untuk pemeriksaan medis lebih lanjut._";
 
         return $pesan;
     }

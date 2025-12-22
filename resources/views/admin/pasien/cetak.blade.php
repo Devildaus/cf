@@ -44,12 +44,34 @@
 
         <tr>
             <td>Deskripsi</td>
-            <td>: {{ isset($pasien->penyakit) ? $pasien->penyakit->desc : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
+            <td>:
+                {{
+                    isset($pasien->penyakit)
+                        ? (
+                            !empty($pasien->deskripsi_ai)
+                                ? $pasien->deskripsi_ai
+                                : $pasien->penyakit->desc
+                        )
+                        : 'Gejala Tidak Akurat. Silakan Diagnosa Ulang'
+                }}
+            </td>
         </tr>
+
         <tr>
             <td>Penanganan</td>
-            <td>:  {{ isset($pasien->penyakit) ? $pasien->penyakit->penanganan : 'Gejala Tidak Akurat. Silahkan Diagnosa Ulang' }}</td>
+            <td>:
+                {{
+                    isset($pasien->penyakit)
+                        ? (
+                            !empty($pasien->penanganan_ai)
+                                ? $pasien->penanganan_ai
+                                : $pasien->penyakit->penanganan
+                        )
+                        : 'Gejala Tidak Akurat. Silakan Diagnosa Ulang'
+                }}
+            </td>
         </tr>
+
 
     </table>
 
