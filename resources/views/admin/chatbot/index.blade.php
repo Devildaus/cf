@@ -147,7 +147,7 @@
             try {
                 // 2. Kirim ke Laravel
                 console.log("Mengirim request...");
-                const response = await fetch(`https://${window.location.host}/admin/konsultasi-diabetes/send`, {
+                const response = await fetch(`${window.location.origin}/admin/konsultasi-diabetes/send`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
